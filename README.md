@@ -1,3 +1,6 @@
+## Live Demo
+Streamlit App: https://credit-card-fraud-detection-app-5uimzmg2but5qy3sqyfijq.streamlit.app/
+
 # Credit Card Fraud Detection System
 
 This project is a Machine Learning–based web application that predicts whether a credit card transaction is **Legitimate** or **Fraudulent**.  
@@ -64,3 +67,9 @@ This project demonstrates:
 - Add real transaction simulation  
 - Experiment with advanced ensemble models  
 
+---
+
+## Why this project?
+This project demonstrates how a machine learning fraud detection model
+can be deployed as a real-world web application where users can upload
+transaction data and instantly detect fraudulent activities.

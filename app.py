@@ -1,62 +1,56 @@
 import streamlit as st
-import numpy as np
+import pandas as pd
 import pickle
 
-# ---------------- Page Config ----------------
+# Load trained model
+model = pickle.load(open("credit_card_model.pkl", "rb"))
+
 st.set_page_config(
     page_title="Credit Card Fraud Detection",
     layout="centered"
 )
 
-# ---------------- Load Model ----------------
-model = pickle.load(open("credit_card_model.pkl", "rb"))
-
-# ---------------- Title & Description ----------------
-st.title("Credit Card Fraud Detection System")
+st.title("💳 Credit Card Fraud Detection System")
 st.write(
-    "This application predicts whether a credit card transaction is **Legitimate** "
-    "or **Fraudulent** using a trained Machine Learning model."
+    "Upload a CSV file containing transaction data to detect fraudulent transactions."
 )
 
-st.markdown("---")
-
-# ---------------- Sample Inputs ----------------
-# NOTE: These are representative examples (28 features)
-sample_legit = np.zeros((1, 28))   # Example of a normal transaction
-sample_fraud = np.ones((1, 28))    # Example of a fraudulent transaction
-
-# ---------------- User Selection ----------------
-transaction_type = st.radio(
-    "Select transaction type to simulate:",
-    ("Legitimate Transaction", "Fraudulent Transaction")
+uploaded_file = st.file_uploader(
+    "Upload CSV file (same format as training data)",
+    type=["csv"]
 )
 
-# ---------------- Prediction ----------------
-if st.button("Predict Transaction"):
-    if transaction_type == "Legitimate Transaction":
-        input_data = sample_legit
-    else:
-        input_data = sample_fraud
+if uploaded_file is not None:
+    try:
+        data = pd.read_csv(uploaded_file)
 
-    prediction = model.predict(input_data)[0]
-    probability = model.predict_proba(input_data)[0][1]
+        st.subheader("Preview of Uploaded Data")
+        st.dataframe(data.head())
 
-    st.markdown("---")
+        # Drop target column if present
+        if "Class" in data.columns:
+            X = data.drop("Class", axis=1)
+        else:
+            X = data.copy()
 
-    if prediction == 1:
-        st.error(
-            f"⚠️ **Fraudulent Transaction Detected**\n\n"
-            f"Confidence: **{probability * 100:.2f}%**"
-        )
-    else:
-        st.success(
-            f"✅ **Legitimate Transaction**\n\n"
-            f"Confidence: **{(1 - probability) * 100:.2f}%**"
+        predictions = model.predict(X)
+
+        fraud_count = (predictions == 1).sum()
+        legit_count = (predictions == 0).sum()
+
+        st.subheader("Prediction Summary")
+        st.success(f"Legitimate Transactions: {legit_count}")
+        st.error(f"Fraudulent Transactions: {fraud_count}")
+
+        # Add predictions to dataframe
+        result_df = data.copy()
+        result_df["Prediction"] = predictions
+        result_df["Prediction"] = result_df["Prediction"].map(
+            {0: "Legit", 1: "Fraud"}
         )
 
-# ---------------- Footer ----------------
-st.markdown("---")
-st.caption(
-    "Note: This demo uses sample feature representations to provide a clean and "
-    "user-friendly prediction experience."
-)
+        st.subheader("Prediction Results")
+        st.dataframe(result_df.head())
+
+    except Exception as e:
+        st.error("Error processing file. Please upload a valid CSV file.")

@@ -199,5 +199,3 @@ This project is an educational machine learning application. Its predictions sho
 ## Repository
 
 GitHub: https://github.com/mani787060/credit-card-fraud-detection-app
-
-**Built with Python, Machine Learning, Scikit-learn, and Streamlit.**
